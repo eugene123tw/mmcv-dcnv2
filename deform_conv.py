@@ -9,19 +9,6 @@ from torch.nn.modules.utils import _pair, _single
 import ext as ext_module
 from mmcv.utils import deprecated_api_warning
 
-# def load_ext(name, funcs):
-#         ext = importlib.import_module(name)
-#         for fun in funcs:
-#             assert hasattr(ext, fun), f'{fun} miss in module {name}'
-#         return ext
-
-# ext_module = load_ext('_ext', [
-#     'deform_conv_forward', 
-#     'deform_conv_backward_input',
-#     'deform_conv_backward_parameters'
-# ])
-
-
 class DeformConv2dFunction(Function):
 
     @staticmethod

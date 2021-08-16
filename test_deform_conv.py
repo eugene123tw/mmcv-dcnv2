@@ -38,7 +38,7 @@ gt_deform_weight_grad = [[[[3.62, 0.], [0.40, 0.18]]]]
 class TestDeformconv(unittest.TestCase):
 
     def _test_deformconv_cpu(self, dtype=torch.float, threshold=1e-3):
-        from mmcv.ops import DeformConv2dPack
+        from deform_conv import DeformConv2dPack
         c_in = 1
         c_out = 1
         x = torch.Tensor(input).type(dtype)
@@ -82,7 +82,7 @@ class TestDeformconv(unittest.TestCase):
     def _test_deformconv(self, dtype=torch.float, threshold=1e-3):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import DeformConv2dPack
+        from deform_conv import DeformConv2dPack
         c_in = 1
         c_out = 1
         x = torch.Tensor(input).cuda().type(dtype)
@@ -136,7 +136,7 @@ class TestDeformconv(unittest.TestCase):
         """
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import DeformConv2dPack
+        from deform_conv import DeformConv2dPack
         c_in = 1
         c_out = 1
         x = torch.Tensor(input).cuda().type(input_dtype)

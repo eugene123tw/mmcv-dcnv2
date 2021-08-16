@@ -2,6 +2,7 @@ import os
 
 import numpy
 import torch
+import unittest
 
 from mmcv.utils import TORCH_VERSION, digit_version
 
@@ -35,12 +36,12 @@ dcn_offset_b_grad = [
 ]
 
 
-class TestMdconv(object):
+class TestMdconv(unittest.TestCase):
 
     def _test_mdconv(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import ModulatedDeformConv2dPack
+        from modulated_deform_conv import ModulatedDeformConv2dPack
         input = torch.tensor(input_t).cuda().type(dtype)
         input.requires_grad = True
 
@@ -52,6 +53,34 @@ class TestMdconv(object):
             padding=1,
             deform_groups=1,
             bias=False).cuda()
+        dcn.weight.data.fill_(1.)
+        dcn.type(dtype)
+        output = dcn(input)
+        output.sum().backward()
+        assert numpy.allclose(output.cpu().detach().numpy(), output_t, 1e-2)
+        assert numpy.allclose(input.grad.cpu().detach().numpy(), input_grad,
+                              1e-2)
+        assert numpy.allclose(dcn.weight.grad.cpu().detach().numpy(),
+                              dcn_w_grad, 1e-2)
+        assert numpy.allclose(
+            dcn.conv_offset.weight.grad.cpu().detach().numpy(),
+            dcn_offset_w_grad, 1e-2)
+        assert numpy.allclose(dcn.conv_offset.bias.grad.cpu().detach().numpy(),
+                              dcn_offset_b_grad, 1e-2)
+
+    def _test_mdconv_cpu(self, dtype=torch.float):
+        from modulated_deform_conv import ModulatedDeformConv2dPack
+        input = torch.tensor(input_t).type(dtype)
+        input.requires_grad = True
+
+        dcn = ModulatedDeformConv2dPack(
+            1,
+            1,
+            kernel_size=(2, 2),
+            stride=1,
+            padding=1,
+            deform_groups=1,
+            bias=False)
         dcn.weight.data.fill_(1.)
         dcn.type(dtype)
         output = dcn(input)
@@ -79,7 +108,7 @@ class TestMdconv(object):
         """
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import ModulatedDeformConv2dPack
+        from modulated_deform_conv import ModulatedDeformConv2dPack
         input = torch.tensor(input_t).cuda().type(input_dtype)
         input.requires_grad = True
 
@@ -106,6 +135,8 @@ class TestMdconv(object):
                               dcn_offset_b_grad, 1e-2)
 
     def test_mdconv(self):
+        self._test_mdconv_cpu(torch.double)
+
         self._test_mdconv(torch.double)
         self._test_mdconv(torch.float)
         self._test_mdconv(torch.half)

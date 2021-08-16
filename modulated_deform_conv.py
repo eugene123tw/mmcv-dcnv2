@@ -8,13 +8,7 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
 from mmcv.utils import deprecated_api_warning
-from ..cnn import CONV_LAYERS
-from ..utils import ext_loader, print_log
-
-ext_module = ext_loader.load_ext(
-    '_ext',
-    ['modulated_deform_conv_forward', 'modulated_deform_conv_backward'])
-
+import ext as ext_module
 
 class ModulatedDeformConv2dFunction(Function):
 
@@ -205,7 +199,6 @@ class ModulatedDeformConv2d(nn.Module):
                                        self.deform_groups)
 
 
-@CONV_LAYERS.register_module('DCNv2')
 class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
     """A ModulatedDeformable Conv Encapsulation that acts as normal Conv
     layers.
@@ -270,12 +263,6 @@ class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
                 state_dict[prefix +
                            'conv_offset.bias'] = state_dict.pop(prefix[:-1] +
                                                                 '_offset.bias')
-
-        if version is not None and version > 1:
-            print_log(
-                f'ModulatedDeformConvPack {prefix.rstrip(".")} is upgraded to '
-                'version 2.',
-                logger='root')
 
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       strict, missing_keys, unexpected_keys,
